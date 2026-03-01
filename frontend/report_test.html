@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Report Item Test</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- React and ReactDOM CDNs -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <!-- Babel for JSX transformation in browser (for this test file only) -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <!-- React Toastify CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/react-toastify/9.0.0/ReactToastify.min.css">
+    <!-- React Toastify JS (for ToastContainer) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react-toastify/9.0.0/react-toastify.min.js"></script>
+    <!-- Socket.IO Client CDN -->
+    <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
+
+    <style>
+        body {
+            font-family: "Inter", sans-serif;
+            background-color: #f0f2f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+        .container {
+            max-width: 600px;
+            background-color: white;
+            padding: 2rem;
+            border-radius: 0.75rem; /* rounded-lg */
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); /* shadow-md */
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, createContext, useContext } = React;
+        const { ToastContainer, toast } = ReactToastify; // Access ReactToastify from global scope
+
+        // Mock useAuth for testing purposes
+        const AuthContext = createContext(null);
+        const useAuth = () => {
+            return {
+                user: { id: 'testUserId123', username: 'testuser', role: 'user' },
+                isAuthenticated: true,
+                loading: false
+            };
+        };
+
+        // Mock useNavigate for testing purposes
+        const useNavigate = () => {
+            return (path) => {
+                console.log(`Navigating to: ${path}`);
+                alert(`Simulated navigation to: ${path}`); // Use alert for visible feedback in test
+            };
+        };
+
+        // Simplified ReportItem component
+        function ReportItem() {
+            const { user, isAuthenticated } = useAuth();
+            const navigate = useNavigate();
+
+            const [itemType, setItemType] = useState('lost');
+            const [name, setName] = useState('');
+            const [category, setCategory] = useState('');
+            const [description, setDescription] = useState('');
+            const [location, setLocation] = useState('');
+            const [date, setDate] = useState('');
+            const [images, setImages] = useState([]);
+
+            const [message, setMessage] = useState('');
+            const [error, setError] = useState('');
+            const [loading, setLoading] = useState(false);
+
+            const categories = [
+                'Electronics', 'Personal Accessories', 'Documents', 'Clothing', 'Bags',
+                'Keys', 'Jewelry', 'Wallets/Purses', 'Books', 'Other'
+            ];
+
+            const handleFileChange = (e) => {
+                setImages(Array.from(e.target.files));
+            };
+
+            const handleSubmit = async (e) => {
+                e.preventDefault();
+                setMessage('');
+                setError('');
+                setLoading(true);
+
+                console.log("Attempting to submit form...");
+                console.log("Item Data:", { itemType, name, category, description, location, date, images: images.map(f => f.name) });
+
+                if (!name || !category || !description || !location || !date) {
+                    setError('Please fill in all required fields.');
+                    setLoading(false);
+                    return;
+                }
+
+                if (!isAuthenticated) {
+                    setError('You must be logged in to report an item.');
+                    setLoading(false);
+                    return;
+                }
+
+                // Simulate API call success/failure
+                try {
+                    // In a real app, you'd use axios.post here
+                    await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate network delay
+                    setMessage('Item reported successfully! (Simulated)');
+                    console.log('Simulated item report success!');
+                    
+                    // Simulate Socket.IO notification (if you want to test this part too)
+                    // const socket = io('http://localhost:5000', { autoConnect: false });
+                    // socket.connect();
+                    // socket.on('connect', () => {
+                    //     console.log('Test Socket connected!');
+                    //     socket.emit('login', user.id);
+                    //     socket.disconnect(); // Disconnect after login emit for this test
+                    // });
+
+                    setTimeout(() => {
+                        navigate('/items'); // This will trigger the mocked navigate
+                    }, 2000);
+
+                } catch (err) {
+                    console.error('Simulated error reporting item:', err);
+                    setError('Failed to report item. Please try again. (Simulated)');
+                } finally {
+                    setLoading(false);
+                }
+            };
+
+            // Add a console log to confirm component rendering
+            console.log("ReportItem component is rendering.");
+
+            return (
+                <div className="container mx-auto p-4">
+                    <h2 className="text-2xl font-bold mb-4">Report a Lost or Found Item</h2>
+
+                    <form onSubmit={handleSubmit} className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
+                        {message && <p className="text-green-500 text-sm italic mb-4">{message}</p>}
+                        {error && <p className="text-red-500 text-sm italic mb-4">{error}</p>}
+                        {loading && <p className="text-blue-500 text-sm italic mb-4">Submitting item...</p>}
+
+                        <div className="mb-4">
+                            <label htmlFor="itemType" className="block text-gray-700 text-sm font-bold mb-2">Item Type:</label>
+                            <select
+                                id="itemType"
+                                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                                value={itemType}
+                                onChange={(e) => setItemType(e.target.value)}
+                                required
+                            >
+                                <option value="lost">Lost</option>
+                                <option value="found">Found</option>
+                            </select>
+                        </div>
+
+                        <div className="mb-4">
+                            <label htmlFor="name" className="block text-gray-700 text-sm font-bold mb-2">Item Name:</label>
+                            <input
+                                type="text"
+                                id="name"
+                                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                                value={name}
+                                onChange={(e) => setName(e.target.value)}
+                                required
+                            />
+                        </div>
+
+                        <div className="mb-4">
+                            <label htmlFor="category" className="block text-gray-700 text-sm font-bold mb-2">Category:</label>
+                            <select
+                                id="category"
+                                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                                value={category}
+                                onChange={(e) => setCategory(e.target.value)}
+                                required
+                            >
+                                <option value="">Select a Category</option>
+                                {categories.map((cat) => (
+                                    <option key={cat} value={cat}>{cat}</option>
+                                ))}
+                            </select>
+                        </div>
+
+                        <div className="mb-4">
+                            <label htmlFor="description" className="block text-gray-700 text-sm font-bold mb-2">Description:</label>
+                            <textarea
+                                id="description"
+                                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline h-32 resize-none"
+                                value={description}
+                                onChange={(e) => setDescription(e.target.value)}
+                                required
+                            ></textarea>
+                        </div>
+
+                        <div className="mb-4">
+                            <label htmlFor="location" className="block text-gray-700 text-sm font-bold mb-2">Location Lost/Found:</label>
+                            <input
+                                type="text"
+                                id="location"
+                                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                                value={location}
+                                onChange={(e) => setLocation(e.target.value)}
+                                required
+                            />
+                        </div>
+
+                        <div className="mb-4">
+                            <label htmlFor="date" className="block text-gray-700 text-sm font-bold mb-2">Date Lost/Found:</label>
+                            <input
+                                type="date"
+                                id="date"
+                                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                                value={date}
+                                onChange={(e) => setDate(e.target.value)}
+                                required
+                            />
+                        </div>
+
+                        <div className="mb-4">
+                            <label htmlFor="images" className="block text-gray-700 text-sm font-bold mb-2">Upload Images (Optional):</label>
+                            <input
+                                type="file"
+                                id="images"
+                                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                                multiple
+                                onChange={handleFileChange}
+                                accept="image/*"
+                            />
+                            {images.length > 0 && (
+                                <p className="text-gray-600 text-xs mt-2">Selected: {images.map(file => file.name).join(', ')}</p>
+                            )}
+                        </div>
+
+                        <div className="flex items-center justify-between">
+                            <button
+                                type="submit"
+                                className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+                                disabled={loading}
+                            >
+                                {loading ? 'Submitting...' : 'Report Item'}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            );
+        }
+
+        // Render the ReportItem component into the root div
+        ReactDOM.createRoot(document.getElementById('root')).render(
+            <React.StrictMode>
+                <ReportItem />
+                <ToastContainer /> {/* Render ToastContainer directly in this test */}
+            </React.StrictMode>
+        );
+    </script>
+</body>
+</html>

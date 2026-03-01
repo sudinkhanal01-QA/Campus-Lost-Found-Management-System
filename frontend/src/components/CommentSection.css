@@ -1,0 +1,64 @@
+.comment-section {
+    margin-top: 2rem;
+    font-family: sans-serif;
+}
+
+.comment-list {
+    margin-top: 1rem;
+}
+
+.comment {
+    border-bottom: 1px solid #eee;
+    padding: 1rem 0;
+}
+
+.comment:last-child {
+    border-bottom: none;
+}
+
+.comment-author {
+    font-weight: bold;
+    margin-bottom: 0.25rem;
+}
+
+.comment-text {
+    margin-bottom: 0.5rem;
+}
+
+.comment-date {
+    font-size: 0.8rem;
+    color: #888;
+}
+
+.comment-form {
+    margin-top: 1.5rem;
+}
+
+.comment-form textarea {
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 1rem;
+    margin-bottom: 0.5rem;
+    resize: vertical;
+}
+
+.comment-form button {
+    padding: 0.5rem 1rem;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 1rem;
+}
+
+.comment-form button:disabled {
+    background-color: #a0cfff;
+    cursor: not-allowed;
+}
+
+.error-message {
+    color: red;
+}
